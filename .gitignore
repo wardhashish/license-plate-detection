@@ -19,4 +19,4 @@ venv/
 .DS_Store
 
 # Results plots (large files)
-results/*.png
+# results/*.png
