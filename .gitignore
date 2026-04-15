@@ -14,6 +14,7 @@ venv/
 
 # Jupyter
 .ipynb_checkpoints/
+notebooks/runs/
 
 # OS
 .DS_Store

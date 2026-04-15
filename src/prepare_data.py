@@ -98,10 +98,10 @@ def prepare(seed=SEED):
 
         counts[split] = len(files)
 
-    # Write dataset.yaml
+    # Write dataset.yaml  (path is relative to yaml file location)
     yaml_path = YOLO_DIR / 'dataset.yaml'
     with open(yaml_path, 'w') as f:
-        f.write(f"path: {YOLO_DIR}\n")
+        f.write(f"path: .\n")
         f.write(f"train: images/train\n")
         f.write(f"val:   images/val\n")
         f.write(f"test:  images/test\n\n")
