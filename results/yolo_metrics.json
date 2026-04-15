@@ -1,0 +1,8 @@
+{
+  "model": "YOLOv8s (Colab T4 GPU)",
+  "epochs": 100,
+  "map50": 0.9467,
+  "map50_95": 0.5175,
+  "precision": 0.9182,
+  "recall": 0.9155
+}

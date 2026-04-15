@@ -19,5 +19,5 @@ venv/
 # OS
 .DS_Store
 
-# Results (optional — remove if you want to track these)
-results/
+# Results plots (large files)
+results/*.png
