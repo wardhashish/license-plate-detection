@@ -1,0 +1,23 @@
+# Data and models (too large for git)
+data/
+models/
+*.pt
+*.pth
+*.weights
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Results (optional — remove if you want to track these)
+results/
