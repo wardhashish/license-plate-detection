@@ -1,7 +1,7 @@
 # License Plate Detection
 **CMPS 261 — Machine Learning Project**
 
-Object detection system that detects and localizes license plates in vehicle images, comparing two architectures: YOLOv8s and Faster R-CNN (ResNet50-FPN v2).
+Object detection system that detects and localizes license plates in vehicle images, comparing three architectures: YOLOv8s, RetinaNet (ResNet50-FPN v2), and Faster R-CNN (ResNet50-FPN v2).
 
 ---
 
@@ -9,10 +9,11 @@ Object detection system that detects and localizes license plates in vehicle ima
 
 | Model | Precision | Recall | F1 | mAP@0.5 |
 |-------|-----------|--------|----|---------|
-| YOLOv8s | 0.9182 | 0.9155 | 0.9169 | **0.9467** |
-| Faster R-CNN | 0.8732 | 0.8732 | 0.8732 | — |
+| YOLOv8s | 0.9182 | 0.9155 | **0.9169** | **0.9467** |
+| RetinaNet ResNet50-FPN v2 | 0.8947 | 0.8862 | 0.8904 | — |
+| Faster R-CNN ResNet50-FPN v2 | 0.8732 | 0.8732 | 0.8732 | — |
 
-**YOLOv8s wins** — single-stage detectors with built-in augmentation outperform two-stage detectors on small datasets (433 images).
+**YOLOv8s wins** — single-stage detectors with built-in augmentation outperform two-stage and anchor-based detectors on small datasets (433 images). RetinaNet (focal loss, two-phase fine-tuning) edges out Faster R-CNN by ~1.7 F1 points.
 
 ---
 
@@ -32,12 +33,11 @@ Object detection system that detects and localizes license plates in vehicle ima
 │   ├── archive/               # Raw dataset — images + VOC XML annotations
 │   └── yolo/                  # Auto-generated YOLO format (created by notebook 02)
 ├── notebooks/
-│   ├── 01_eda.ipynb           # Exploratory data analysis
-│   ├── 02_train_yolo.ipynb    # YOLOv8s training & evaluation (local)
-│   ├── 03_train_fasterrcnn.ipynb  # Faster R-CNN training & evaluation (local)
-│   ├── 04_evaluation.ipynb    # Load weights → compute metrics → compare models
-│   ├── colab_yolo_training.ipynb       # YOLOv8s training on Google Colab (GPU)
-│   └── colab_fasterrcnn_training.ipynb # Faster R-CNN training on Google Colab (GPU)
+│   ├── 01_eda.ipynb              # Exploratory data analysis
+│   ├── 02_train_yolo.ipynb       # YOLOv8s training (runs locally and on Colab)
+│   ├── 03_train_fasterrcnn.ipynb # Faster R-CNN training (runs locally and on Colab)
+│   ├── 04_train_retinanet.ipynb  # RetinaNet training (runs locally and on Colab)
+│   └── 05_evaluation.ipynb       # Load weights → compute metrics → compare models
 ├── src/
 │   ├── prepare_data.py        # VOC → YOLO format conversion + train/val/test split
 │   └── fasterrcnn_dataset.py  # PyTorch Dataset class for Faster R-CNN
@@ -78,20 +78,14 @@ Run notebooks in this order:
 | 1 | `01_eda.ipynb` | Explore dataset — distributions, sample images |
 | 2 | `02_train_yolo.ipynb` | Train YOLOv8s, saves `models/yolov8s_best.pt` |
 | 3 | `03_train_fasterrcnn.ipynb` | Train Faster R-CNN, saves `models/fasterrcnn_best.pth` |
-| 4 | `04_evaluation.ipynb` | Load weights → evaluate on test set → generate plots |
+| 4 | `04_train_retinanet.ipynb` | Train RetinaNet, saves `models/retinanet_best.pth` |
+| 5 | `05_evaluation.ipynb` | Load all weights → evaluate on test set → compare models |
 
-> **Tip:** Steps 2 and 3 are slow on CPU. Use the `colab_*.ipynb` notebooks on Google Colab (free T4 GPU) to train faster, then download the weights and place them in `models/`.
+> **Tip:** Training notebooks 02–04 auto-detect their environment — run them locally on CPU/MPS or upload to Google Colab (T4 GPU) for faster training. No separate Colab files needed.
 
----
+### Running on Google Colab
 
-## Colab Training (Recommended)
-
-If training locally is too slow:
-
-1. Upload `license_plate_data.zip` to Google Drive root
-2. Open `notebooks/colab_yolo_training.ipynb` on Colab → Runtime → T4 GPU → Run all
-3. Open `notebooks/colab_fasterrcnn_training.ipynb` on Colab → Run all
-4. Download the weights files and place in `models/`:
-   - `models/yolov8s_best.pt`
-   - `models/fasterrcnn_best.pth`
-5. Run `04_evaluation.ipynb` locally
+1. Upload `license_plate_data.zip` to your Google Drive root
+2. Open any training notebook on Colab → Runtime → Change runtime type → T4 GPU → Run all
+3. The notebook mounts Drive, extracts the data, trains, and downloads the weights automatically
+4. Place the downloaded `.pt` / `.pth` files in `models/` and run `05_evaluation.ipynb` locally

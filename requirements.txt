@@ -10,3 +10,5 @@ Pillow
 pycocotools
 tqdm
 jupyter
+certifi
+streamlit
