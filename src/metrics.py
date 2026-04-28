@@ -32,10 +32,13 @@ def compute_metrics(model, loader, threshold, device, iou_match=0.5):
             imgs = [img.to(device) for img in imgs]
             preds = model(imgs)
             for pred, tgt in zip(preds, targets):
-                pred_boxes = [b.tolist() for b, s in zip(pred['boxes'].cpu(), pred['scores'].cpu())
-                              if s.item() >= threshold]
-                gt_boxes   = tgt['boxes'].tolist()
-                matched    = set()
+                keep = pred['scores'].cpu() >= threshold
+                pred_boxes = pred['boxes'].cpu()[keep]
+                pred_scores = pred['scores'].cpu()[keep]
+                order = torch.argsort(pred_scores, descending=True)
+                pred_boxes = [pred_boxes[i].tolist() for i in order]
+                gt_boxes = tgt['boxes'].tolist()
+                matched = set()
                 for pb in pred_boxes:
                     best_iou, best_j = 0.0, -1
                     for j, gb in enumerate(gt_boxes):

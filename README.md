@@ -1,19 +1,21 @@
 # License Plate Detection
 **CMPS 261 — Machine Learning Project**
 
-Object detection system that detects and localizes license plates in vehicle images, comparing three architectures: YOLOv8s, RetinaNet (ResNet50-FPN v2), and Faster R-CNN (ResNet50-FPN v2).
+Object detection system that detects and localizes license plates in vehicle images using three architectures: YOLOv8s, RetinaNet (ResNet50-FPN v2), and Faster R-CNN (ResNet50-FPN v2).
 
 ---
 
 ## Results
 
-| Model | Precision | Recall | F1 | mAP@0.5 |
-|-------|-----------|--------|----|---------|
-| YOLOv8s | 0.9182 | 0.9155 | **0.9169** | **0.9467** |
-| RetinaNet ResNet50-FPN v2 | 0.8667 | 0.9155 | 0.8904 | — |
-| Faster R-CNN ResNet50-FPN v2 | 0.8732 | 0.8732 | 0.8732 | — |
+| Evaluator | Model | Threshold | Precision | Recall | F1 | mAP@0.5 | mAP@0.5:0.95 | Mean IoU |
+|-----------|-------|-----------|-----------|--------|----|---------|--------------|----------|
+| Ultralytics `val()` | YOLOv8s | default val settings | 0.9182 | 0.9155 | **0.9169** | **0.9467** | 0.5176 | — |
+| Custom IoU>=0.5 greedy matching | Faster R-CNN ResNet50-FPN v2 | 0.80 | 0.8904 | 0.9155 | 0.9028 | — | — | 0.7909 |
+| Custom IoU>=0.5 greedy matching | RetinaNet ResNet50-FPN v2 | 0.45 | 0.8667 | 0.9155 | 0.8904 | — | — | 0.7823 |
 
-**YOLOv8s wins** — single-stage detectors with built-in augmentation outperform two-stage and anchor-based detectors on small datasets (433 images). RetinaNet (focal loss, two-phase fine-tuning) edges out Faster R-CNN by ~1.7 F1 points.
+YOLOv8s has the strongest reported detector metrics, including mAP@0.5. The torchvision models are evaluated with a separate custom precision/recall/F1 script, so their F1 scores are useful for comparing Faster R-CNN vs RetinaNet but should not be treated as a strict apples-to-apples mAP comparison against YOLO.
+
+For Faster R-CNN and RetinaNet, the confidence threshold is selected on the validation set by maximizing F1 over the actual validation prediction scores, then applied once to the test set. This is a standard validation-tuning approach; it avoids using test labels for threshold selection, but the result should still be reported as validation-tuned.
 
 ---
 

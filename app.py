@@ -22,11 +22,18 @@ st.set_page_config(page_title="License Plate Detector", layout="wide")
 st.title("License Plate Detector")
 st.caption("CMPS 261 — Machine Learning Project")
 
-# ── best thresholds found during training (maximise F1 on val set) ────────────
+def _metric_threshold(filename, fallback):
+    path = os.path.join(RESULT, filename)
+    if not os.path.exists(path):
+        return fallback
+    with open(path) as f:
+        return float(json.load(f).get("threshold", fallback))
+
+# ── best thresholds found on validation data ──────────────────────────────────
 BEST_THRESHOLD = {
     "YOLOv8s":      0.25,
-    "RetinaNet":    0.45,
-    "Faster R-CNN": 0.50,
+    "RetinaNet":    _metric_threshold("retinanet_metrics.json", 0.45),
+    "Faster R-CNN": _metric_threshold("fasterrcnn_metrics.json", 0.80),
 }
 
 # ── sidebar ───────────────────────────────────────────────────────────────────
