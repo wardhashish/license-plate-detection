@@ -52,14 +52,27 @@ with st.sidebar:
 
     st.divider()
     st.subheader("Model Results")
-    metrics_data = [
-        {"Model": "YOLOv8s",       "F1": 0.9169, "mAP@0.5": 0.9467},
-        {"Model": "RetinaNet",     "F1": 0.8904, "mAP@0.5": "—"},
-        {"Model": "Faster R-CNN",  "F1": 0.8732, "mAP@0.5": "—"},
-    ]
-    for m in metrics_data:
-        bold = "**" if m["Model"] == model_choice else ""
-        st.markdown(f"{bold}{m['Model']}{bold} — F1: `{m['F1']}` | mAP@0.5: `{m['mAP@0.5']}`")
+
+    def _load_metric(filename):
+        path = os.path.join(RESULT, filename)
+        if not os.path.exists(path):
+            return None
+        with open(path) as f:
+            return json.load(f)
+
+    metric_files = {
+        "YOLOv8s":      "yolo_metrics.json",
+        "RetinaNet":    "retinanet_metrics.json",
+        "Faster R-CNN": "fasterrcnn_metrics.json",
+    }
+    for name, fname in metric_files.items():
+        m = _load_metric(fname)
+        if m is None:
+            continue
+        f1   = f"{m.get('f1', 0):.4f}"
+        map5 = f"{m['map50']:.4f}" if 'map50' in m else "—"
+        bold = "**" if name == model_choice else ""
+        st.markdown(f"{bold}{name}{bold} — F1: `{f1}` | mAP@0.5: `{map5}`")
 
 # ── model loaders (cached so they only load once) ─────────────────────────────
 @st.cache_resource
@@ -69,21 +82,17 @@ def load_yolo():
 
 @st.cache_resource
 def load_frcnn():
-    import ssl
-    ssl._create_default_https_context = ssl._create_unverified_context
-    from torchvision.models.detection import fasterrcnn_resnet50_fpn_v2, FasterRCNN_ResNet50_FPN_V2_Weights
+    from torchvision.models.detection import fasterrcnn_resnet50_fpn_v2
     from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
     model = fasterrcnn_resnet50_fpn_v2(weights=None)
     in_f  = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_f, 2)
-    model.load_state_dict(torch.load(FRCNN_WEIGHTS, map_location=DEVICE))
+    model.load_state_dict(torch.load(FRCNN_WEIGHTS, map_location=DEVICE, weights_only=True))
     model.to(DEVICE).eval()
     return model
 
 @st.cache_resource
 def load_retinanet():
-    import ssl
-    ssl._create_default_https_context = ssl._create_unverified_context
     from torchvision.models.detection import retinanet_resnet50_fpn_v2
     from torchvision.models.detection.retinanet import RetinaNetClassificationHead
     model = retinanet_resnet50_fpn_v2(weights=None)
@@ -93,7 +102,7 @@ def load_retinanet():
         in_channels=in_channels, num_anchors=num_anchors, num_classes=2,
         norm_layer=torch.nn.BatchNorm2d,
     )
-    model.load_state_dict(torch.load(RETINA_WEIGHTS, map_location=DEVICE))
+    model.load_state_dict(torch.load(RETINA_WEIGHTS, map_location=DEVICE, weights_only=True))
     model.to(DEVICE).eval()
     return model
 

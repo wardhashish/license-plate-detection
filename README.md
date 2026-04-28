@@ -10,7 +10,7 @@ Object detection system that detects and localizes license plates in vehicle ima
 | Model | Precision | Recall | F1 | mAP@0.5 |
 |-------|-----------|--------|----|---------|
 | YOLOv8s | 0.9182 | 0.9155 | **0.9169** | **0.9467** |
-| RetinaNet ResNet50-FPN v2 | 0.8947 | 0.8862 | 0.8904 | — |
+| RetinaNet ResNet50-FPN v2 | 0.8667 | 0.9155 | 0.8904 | — |
 | Faster R-CNN ResNet50-FPN v2 | 0.8732 | 0.8732 | 0.8732 | — |
 
 **YOLOv8s wins** — single-stage detectors with built-in augmentation outperform two-stage and anchor-based detectors on small datasets (433 images). RetinaNet (focal loss, two-phase fine-tuning) edges out Faster R-CNN by ~1.7 F1 points.
@@ -33,6 +33,7 @@ Object detection system that detects and localizes license plates in vehicle ima
 │   ├── archive/               # Raw dataset — images + VOC XML annotations
 │   └── yolo/                  # Auto-generated YOLO format (created by notebook 02)
 ├── notebooks/
+│   ├── 00_full_pipeline.ipynb    # Comprehensive single-file pipeline (submission copy)
 │   ├── 01_eda.ipynb              # Exploratory data analysis
 │   ├── 02_train_yolo.ipynb       # YOLOv8s training (runs locally and on Colab)
 │   ├── 03_train_fasterrcnn.ipynb # Faster R-CNN training (runs locally and on Colab)
@@ -40,7 +41,8 @@ Object detection system that detects and localizes license plates in vehicle ima
 │   └── 05_evaluation.ipynb       # Load weights → compute metrics → compare models
 ├── src/
 │   ├── prepare_data.py        # VOC → YOLO format conversion + train/val/test split
-│   └── fasterrcnn_dataset.py  # PyTorch Dataset class for Faster R-CNN
+│   ├── dataset.py             # PyTorch Dataset for VOC license-plate annotations
+│   └── metrics.py             # Shared IoU + precision/recall/F1 evaluation
 ├── models/                    # Trained weights — stored locally (too large for GitHub)
 ├── results/                   # Metrics JSON + comparison plots
 └── requirements.txt
@@ -53,6 +55,9 @@ Object detection system that detects and localizes license plates in vehicle ima
 ```bash
 pip install -r requirements.txt
 ```
+
+> **macOS users:** if you hit `SSL: CERTIFICATE_VERIFY_FAILED` when torchvision downloads pretrained weights, run
+> `/Applications/Python\ 3.x/Install\ Certificates.command` once. The notebooks also fall back to `certifi` automatically.
 
 ### Data Setup
 
@@ -71,7 +76,15 @@ data/
 
 ## Run Order
 
-Run notebooks in this order:
+There are two equivalent ways to run the project:
+
+### Option A — single comprehensive notebook (recommended for submission)
+
+| Notebook | What it does |
+|----------|--------------|
+| `00_full_pipeline.ipynb` | EDA → YOLOv8s → Faster R-CNN → RetinaNet → comparison, all in one file. Auto-skips training if weights already exist in `models/`. |
+
+### Option B — separate notebooks (one model at a time)
 
 | Step | Notebook | What it does |
 |------|----------|-------------|
@@ -81,7 +94,7 @@ Run notebooks in this order:
 | 4 | `04_train_retinanet.ipynb` | Train RetinaNet, saves `models/retinanet_best.pth` |
 | 5 | `05_evaluation.ipynb` | Load all weights → evaluate on test set → compare models |
 
-> **Tip:** Training notebooks 02–04 auto-detect their environment — run them locally on CPU/MPS or upload to Google Colab (T4 GPU) for faster training. No separate Colab files needed.
+> **Tip:** All notebooks auto-detect their environment — run them locally on CPU/MPS or upload to Google Colab (T4 GPU) for faster training. No separate Colab files needed.
 
 ### Running on Google Colab
 
