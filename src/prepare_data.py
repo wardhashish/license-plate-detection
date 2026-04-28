@@ -12,6 +12,7 @@ Output structure:
 """
 
 import os
+import hashlib
 import shutil
 import random
 import xml.etree.ElementTree as ET
@@ -56,24 +57,53 @@ def parse_xml(xml_path):
     return filename, img_w, img_h, boxes
 
 
+def file_md5(path):
+    h = hashlib.md5()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 20), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def prepare(seed=SEED):
     random.seed(seed)
 
     # Gather all XML files
     xml_files = sorted(ANN_DIR.glob('*.xml'))
-    random.shuffle(xml_files)
 
-    n       = len(xml_files)
+    # Deduplicate by image content hash. The Kaggle archive ships 131 byte-identical
+    # image copies under different Cars###.png filenames; without dedup, random
+    # splitting puts copies of the same image in train and test, leaking ~30% of
+    # the test set.
+    hash_to_xmls = {}
+    for xml_path in xml_files:
+        filename, *_ = parse_xml(xml_path)
+        img_path = IMG_DIR / filename
+        if not img_path.exists():
+            continue
+        hash_to_xmls.setdefault(file_md5(img_path), []).append(xml_path)
+
+    # One canonical XML per unique image (alphabetically first → deterministic)
+    unique_xmls = sorted(min(group) for group in hash_to_xmls.values())
+    removed = len(xml_files) - len(unique_xmls)
+    print(f"Dedup: {len(xml_files)} XMLs -> {len(unique_xmls)} unique images "
+          f"({removed} duplicate copies removed)")
+
+    random.shuffle(unique_xmls)
+
+    n       = len(unique_xmls)
     n_train = int(n * TRAIN_FRAC)
     n_val   = int(n * VAL_FRAC)
 
     splits = {
-        'train': xml_files[:n_train],
-        'val'  : xml_files[n_train:n_train + n_val],
-        'test' : xml_files[n_train + n_val:],
+        'train': unique_xmls[:n_train],
+        'val'  : unique_xmls[n_train:n_train + n_val],
+        'test' : unique_xmls[n_train + n_val:],
     }
 
-    # Create output dirs
+    # Wipe any prior split so stale (leaked) files don't linger
+    if YOLO_DIR.exists():
+        shutil.rmtree(YOLO_DIR)
     for split in splits:
         (YOLO_DIR / 'images' / split).mkdir(parents=True, exist_ok=True)
         (YOLO_DIR / 'labels' / split).mkdir(parents=True, exist_ok=True)
@@ -108,11 +138,24 @@ def prepare(seed=SEED):
         f.write(f"nc: 1\n")
         f.write(f"names: ['licence']\n")
 
+    # Safety check: no image content hash should appear in more than one split
+    seen = {}
+    for split in splits:
+        for img in (YOLO_DIR / 'images' / split).iterdir():
+            h = file_md5(img)
+            if h in seen and seen[h] != split:
+                raise RuntimeError(
+                    f"Cross-split duplicate after dedup: {img.name} ({split}) "
+                    f"matches an image already placed in {seen[h]}"
+                )
+            seen[h] = split
+
     print(f"Data prepared:")
     print(f"  Train : {counts['train']} images")
     print(f"  Val   : {counts['val']}   images")
     print(f"  Test  : {counts['test']}  images")
     print(f"  YAML  : {yaml_path}")
+    print(f"  Cross-split duplicates: 0 (verified)")
     return str(yaml_path)
 
 

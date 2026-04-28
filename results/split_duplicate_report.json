@@ -1,0 +1,63 @@
+{
+  "hash": "8x8 average hash",
+  "max_distance": 5,
+  "images_checked": 302,
+  "cross_split_warnings": [
+    {
+      "left_split": "train",
+      "left_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/train/Cars144.png",
+      "right_split": "val",
+      "right_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/val/Cars322.png",
+      "hamming_distance": 5
+    },
+    {
+      "left_split": "train",
+      "left_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/train/Cars225.png",
+      "right_split": "test",
+      "right_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/test/Cars118.png",
+      "hamming_distance": 0
+    },
+    {
+      "left_split": "train",
+      "left_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/train/Cars252.png",
+      "right_split": "val",
+      "right_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/val/Cars322.png",
+      "hamming_distance": 5
+    },
+    {
+      "left_split": "train",
+      "left_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/train/Cars254.png",
+      "right_split": "val",
+      "right_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/val/Cars296.png",
+      "hamming_distance": 5
+    },
+    {
+      "left_split": "train",
+      "left_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/train/Cars295.png",
+      "right_split": "test",
+      "right_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/test/Cars413.png",
+      "hamming_distance": 0
+    },
+    {
+      "left_split": "train",
+      "left_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/train/Cars329.png",
+      "right_split": "val",
+      "right_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/val/Cars296.png",
+      "hamming_distance": 5
+    },
+    {
+      "left_split": "train",
+      "left_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/train/Cars347.png",
+      "right_split": "val",
+      "right_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/val/Cars322.png",
+      "hamming_distance": 4
+    },
+    {
+      "left_split": "val",
+      "left_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/val/Cars36.png",
+      "right_split": "test",
+      "right_path": "/Users/ward/Desktop/aub/261/project/261_code/license plate/data/yolo/images/test/Cars286.png",
+      "hamming_distance": 0
+    }
+  ]
+}
