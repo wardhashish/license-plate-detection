@@ -45,12 +45,13 @@ with st.sidebar:
         help="YOLOv8s is fastest and most accurate on this dataset."
     )
 
-    auto = st.checkbox("Auto threshold (best F1)", value=True,
-                       help="Uses the confidence threshold that maximised F1 on the validation set for each model.")
+    auto = st.checkbox("Auto threshold", value=True,
+                       help="Torchvision models use validation-F1 thresholds from metrics JSON. YOLO uses the standard 0.25 inference default unless you tune it with unified_evaluation.py.")
 
     if auto:
         threshold = BEST_THRESHOLD[model_choice]
-        st.caption(f"Using best threshold for {model_choice}: **{threshold}**")
+        label = "default inference threshold" if model_choice == "YOLOv8s" else "validation-F1 threshold"
+        st.caption(f"Using {label} for {model_choice}: **{threshold}**")
     else:
         threshold = st.slider(
             "Confidence threshold", min_value=0.10, max_value=0.90,
