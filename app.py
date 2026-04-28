@@ -29,11 +29,24 @@ def _metric_threshold(filename, fallback):
     with open(path) as f:
         return float(json.load(f).get("threshold", fallback))
 
+def _unified_metric(model_key):
+    path = os.path.join(RESULT, "unified_metrics.json")
+    if not os.path.exists(path):
+        return None
+    with open(path) as f:
+        return json.load(f).get("models", {}).get(model_key)
+
+def _unified_threshold(model_key, fallback):
+    metric = _unified_metric(model_key)
+    if metric is None:
+        return fallback
+    return float(metric.get("validation_threshold", fallback))
+
 # ── best thresholds found on validation data ──────────────────────────────────
 BEST_THRESHOLD = {
-    "YOLOv8s":      0.25,
-    "RetinaNet":    _metric_threshold("retinanet_metrics.json", 0.45),
-    "Faster R-CNN": _metric_threshold("fasterrcnn_metrics.json", 0.80),
+    "YOLOv8s":      _unified_threshold("yolo", 0.25),
+    "RetinaNet":    _unified_threshold("retinanet", _metric_threshold("retinanet_metrics.json", 0.45)),
+    "Faster R-CNN": _unified_threshold("fasterrcnn", _metric_threshold("fasterrcnn_metrics.json", 0.80)),
 }
 
 # ── sidebar ───────────────────────────────────────────────────────────────────
@@ -46,12 +59,11 @@ with st.sidebar:
     )
 
     auto = st.checkbox("Auto threshold", value=True,
-                       help="Torchvision models use validation-F1 thresholds from metrics JSON. YOLO uses the standard 0.25 inference default unless you tune it with unified_evaluation.py.")
+                       help="Uses validation-F1 thresholds from unified_metrics.json when available.")
 
     if auto:
         threshold = BEST_THRESHOLD[model_choice]
-        label = "default inference threshold" if model_choice == "YOLOv8s" else "validation-F1 threshold"
-        st.caption(f"Using {label} for {model_choice}: **{threshold}**")
+        st.caption(f"Using validation-F1 threshold for {model_choice}: **{threshold:.4f}**")
     else:
         threshold = st.slider(
             "Confidence threshold", min_value=0.10, max_value=0.90,
@@ -75,12 +87,20 @@ with st.sidebar:
     }
     for name, fname in metric_files.items():
         m = _load_metric(fname)
-        if m is None:
+        unified_key = {"YOLOv8s": "yolo", "RetinaNet": "retinanet", "Faster R-CNN": "fasterrcnn"}[name]
+        unified = _unified_metric(unified_key)
+        if m is None and unified is None:
             continue
-        f1   = f"{m.get('f1', 0):.4f}"
-        map5 = f"{m['map50']:.4f}" if 'map50' in m else "—"
+        if unified is not None:
+            test_metrics = unified.get("test_f1_at_validation_threshold", {})
+            coco_metrics = unified.get("test_coco", {})
+            f1 = f"{test_metrics.get('f1', 0):.4f}"
+            map5 = f"{coco_metrics.get('AP50', 0):.4f}"
+        else:
+            f1 = f"{m.get('f1', 0):.4f}"
+            map5 = f"{m['map50']:.4f}" if 'map50' in m else "—"
         bold = "**" if name == model_choice else ""
-        st.markdown(f"{bold}{name}{bold} — F1: `{f1}` | mAP@0.5: `{map5}`")
+        st.markdown(f"{bold}{name}{bold} — F1: `{f1}` | AP@0.5: `{map5}`")
 
 # ── model loaders (cached so they only load once) ─────────────────────────────
 @st.cache_resource
