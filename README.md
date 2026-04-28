@@ -13,11 +13,11 @@ The strictest comparison path is `src/unified_evaluation.py`, which scores all t
 
 | Model | Val-Tuned Threshold | Test F1 | F1 95% CI | COCO AP | AP@0.5 | AP@0.75 | Mean IoU |
 |-------|---------------------|---------|-----------|---------|--------|---------|----------|
-| YOLOv8s | 0.6157 | 0.8741 | 0.8175-0.9291 | **0.5098** | 0.9164 | 0.5045 | 0.7947 |
-| Faster R-CNN ResNet50-FPN v2 | 0.8529 | **0.9000** | 0.8467-0.9496 | 0.4995 | **0.9602** | 0.4446 | **0.7941** |
+| YOLOv8s | 0.4798 | **0.9265** | 0.8806-0.9655 | **0.5114** | 0.9385 | 0.5187 | 0.7862 |
+| Faster R-CNN ResNet50-FPN v2 | 0.8529 | 0.9000 | 0.8467-0.9496 | 0.4995 | **0.9602** | 0.4446 | **0.7941** |
 | RetinaNet ResNet50-FPN v2 | 0.4745 | 0.8828 | 0.8219-0.9315 | 0.5075 | 0.9054 | **0.5547** | 0.7889 |
 
-Under this unified evaluator, all three models are close. Faster R-CNN has the strongest validation-tuned test F1 and AP@0.5, YOLOv8s has the highest overall COCO AP by a small margin, and RetinaNet has the best AP@0.75 localization. Because the test set is small and the F1 confidence intervals overlap, the differences should be interpreted cautiously rather than as a decisive win for one architecture.
+Under this unified evaluator, YOLOv8s is the strongest overall model after retraining at image size 960, with the best validation-tuned test F1 and COCO AP. Faster R-CNN still has the best AP@0.5, and RetinaNet has the best AP@0.75 localization. Because the test set is small and the F1 confidence intervals overlap, the differences should still be interpreted cautiously.
 
 ### Ultralytics YOLO Reference Metric
 
@@ -25,9 +25,9 @@ YOLOv8s also reports its native Ultralytics test metrics:
 
 | Model | Image Size | Precision | Recall | F1 | mAP@0.5 | mAP@0.5:0.95 |
 |-------|------------|-----------|--------|----|---------|--------------|
-| YOLOv8s | 960 | 0.8674 | 0.8873 | 0.8773 | 0.9265 | 0.5188 |
+| YOLOv8s | 960 | 0.9700 | 0.9103 | 0.9392 | 0.9418 | 0.5168 |
 
-The YOLO image-size experiment is configured at `YOLO_IMGSZ = 960`; retraining at this resolution is recommended before treating the 960 result as a final architecture comparison.
+The YOLO image-size experiment is configured at `YOLO_IMGSZ = 960`; the reported result uses YOLOv8s retrained at this resolution.
 
 ---
 
